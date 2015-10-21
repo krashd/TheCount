@@ -74,6 +74,22 @@ Private Function IsVarArrayEmpty(anArray As Variant)
     End If
 End Function
 
+'Call the database to remove the values stored
+Private Sub clearDatabaseValues(anArray As Variant)
+    Dim lPos As Long
+    Dim stSQL As String
+    
+    If Not IsVarArrayEmpty(arSheetNumber) Then
+        'Call ADO_Conn.Open_Connection
+        For lPos = 0 To UBound(arSheetNumber)
+            stSQL = "DELETE FROM Pickings WHERE sheetNumber = '" & arSheetNumber(lPos) & "';"
+            'ADO_Conn.conn.Execute stSQL
+            Debug.Print "database execution string: " & stSQL
+        Next lPos
+        'Call ADO_Conn.Close_Connection
+    End If
+End Sub
+
 'Clear entries from any exisiting date that matches the same date
 Private Sub clearPreviousData()
     Dim lookR As Range, rCell As Range
@@ -90,12 +106,10 @@ Private Sub clearPreviousData()
                 Call addToDatabaseArray(rCell.Value) 'Add the value to the array for database processing.
             End If
         Next rCell
-        'Call the delete SQL to remove the value from the database that are in the array.
+        Call clearDatabaseValues(arSheetNumber) 'Call the delete SQL to remove the value from the database that are in the array.
     Else
         'Incorrect column found, return error and stop the program.
     End If
-    
-    'Run an SQL command to clear the data from the database.
 End Sub
 
 'collect the data to be entered into the database
