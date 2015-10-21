@@ -95,10 +95,7 @@ Private Sub clearPreviousData()
         'Incorrect column found, return error and stop the program.
     End If
     
-    
     On Error GoTo ErrorHandler
-
-    
     
     On Error Resume Next
     'Collect the date of the sheet
