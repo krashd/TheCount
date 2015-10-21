@@ -95,15 +95,7 @@ Private Sub clearPreviousData()
         'Incorrect column found, return error and stop the program.
     End If
     
-    On Error GoTo ErrorHandler
-    
-    On Error Resume Next
-    'Collect the date of the sheet
     'Run an SQL command to clear the data from the database.
-    
-ErrorHandler:
-    Debug.Print ErrorCode
-    Resume
 End Sub
 
 'collect the data to be entered into the database
