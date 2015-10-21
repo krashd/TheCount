@@ -82,7 +82,7 @@ Private Sub clearDatabaseValues(anArray As Variant)
     If Not IsVarArrayEmpty(arSheetNumber) Then
         'Call ADO_Conn.Open_Connection
         For lPos = 0 To UBound(arSheetNumber)
-            stSQL = "DELETE FROM Pickings WHERE sheetNumber = '" & arSheetNumber(lPos) & "';"
+            stSQL = "DELETE FROM [Pickings] WHERE [sheetNumber] = '" & arSheetNumber(lPos) & "';"
             'ADO_Conn.conn.Execute stSQL
             Debug.Print "database execution string: " & stSQL
         Next lPos
