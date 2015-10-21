@@ -1,10 +1,10 @@
-Public Const versionNumber = 0.2
+Public Const versionNumber = 0.3
 Public Const versionType = "Custom"
 Public Const versionSite = "Dronfield"
 
 Const SettingsSheetName = "Control Buttons"
 
-Dim conn As ADODB.Connection
+Public conn As ADODB.Connection
 Public boolConnectionOpen As Boolean
 Dim boolRecordsetOpen As Boolean
 Dim databaseLocation As String
