@@ -1,4 +1,4 @@
-Public Const versionNumber = 0.3
+Public Const versionNumber = 0.4
 Public Const versionType = "Custom"
 Public Const versionSite = "Dronfield"
 
@@ -9,6 +9,17 @@ Public boolConnectionOpen As Boolean
 Dim boolRecordsetOpen As Boolean
 Dim databaseLocation As String
 
+'Temporarily changes the selected database for useage.
+Public Sub changeTargetDatabase(newDatabaseLocation As String)
+    databaseLocation = newDatabaseLocation
+End Sub
+
+'Returns the currently loaded database location.
+Public Function returnLoadedDatabaseLocation() As String
+    returnLoadedDatabaseLocation = databaseLocation
+End Function
+
+'Loads the default database settings from the worksheet.
 Public Function Load_Settings() As Long
     Dim wbCurrent As Workbook
     Dim wsSettings As Worksheet
@@ -19,6 +30,7 @@ Public Function Load_Settings() As Long
     Set wsSettings = Nothing
     Set wbCurrent = Nothing
 End Function
+
 
 Private Sub saveNewDatabaseLocation(databaseLocation As String)
     Dim wbCurrent As Workbook
@@ -69,20 +81,19 @@ Private Function checkDatabaseLocation(databaseLocation As String) As String
     checkDatabaseLocation = databaseLocation
 End Function
 
-Public Function Open_Connection() As Long
+'Gather the information to connect to the appropriate database.
+Public Function Open_Connection(Optional customDatabaseLocation As String = vbNullString) As Long
     Set conn = New ADODB.Connection
-    'Dim databaseLocation As String
     
-    If databaseLocation = "" Or IsNull(databaseLocation) Then
-        Load_Settings
-    End If
+    If Not customDatabaseLocation = vbNullString Then databaseLocation = customDatabaseLocation 'Use the custom location if it is supplied
+    If databaseLocation = "" Or IsNull(databaseLocation) Then Load_Settings 'Use the default if not supplied.
     
-    databaseLocation = checkDatabaseLocation(databaseLocation)
+    databaseLocation = checkDatabaseLocation(databaseLocation) 'Check to see if the database exists.
     
     conn.Provider = "Microsoft.Jet.OLEDB.4.0"    'Main Connection method used
     conn.ConnectionString = "Data Source=" & databaseLocation 'DB Location to open
     
-    conn.Open
+    conn.Open   'Open the Connection to the database.
 
     Debug.Print Err.Number
     Open_Connection = Err.Number
