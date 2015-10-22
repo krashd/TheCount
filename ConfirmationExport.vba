@@ -80,13 +80,18 @@ Private Sub clearDatabaseValues(anArray As Variant)
     Dim stSQL As String
     
     If Not IsVarArrayEmpty(arSheetNumber) Then
-        'Call ADO_Conn.Open_Connection
+        Dim tempString As String
+        Private Const stDronfieldSystem = "\\prg-dc.dhl.com\uk\dsc\sites\Boots\Boots_Contract\Chill\Dronfield\Dude's Folder\Maintenance\Dronfield-System.mdb"
+        
+        Call ADO_Conn.Open_Connection(stDronfieldSystem) 'Open the connection to a different database.
         For lPos = 0 To UBound(arSheetNumber)
-            stSQL = "DELETE FROM [Pickings] WHERE [sheetNumber] = '" & arSheetNumber(lPos) & "';"
-            'ADO_Conn.conn.Execute stSQL
+            stSQL = "DELETE FROM [@Pickings] WHERE [sheetNumber] = '" & arSheetNumber(lPos) & "';"
+            ADO_Conn.conn.Execute stSQL
             Debug.Print "database execution string: " & stSQL
         Next lPos
-        'Call ADO_Conn.Close_Connection
+        Call ADO_Conn.Close_Connection
+        tempString = ADO_Conn.returnLoadedDatabaseLocation
+        Debug.Print tempString
     End If
 End Sub
 
@@ -114,12 +119,14 @@ End Sub
 
 'collect the data to be entered into the database
 Private Sub collectNewData()
-    
+    'Set the range to read.
+    'Add the value to the Picking Object Array.
 End Sub
 
 'Add data to the database
 Private Sub addToDatabase()
-
+    'Create the string for each of the entries for the database.
+    'Execute the SQL code for the database entries.
 End Sub
 
 'Removes objects from memory
