@@ -25,3 +25,7 @@ Public Property Get Item(NameOrNumber As Variant) As clsPickingFigure
 'return a particular picking figure.
     Set Item = mcolPickingFigures(NameOrNumber)
 End Property
+
+Property Get Items() As Collection
+    Set Items = mcolPickingFigures
+End Property
