@@ -1,4 +1,5 @@
 Private Const helpFile = "U:\Boots_Contract\Chill\Dronfield\Dude's Folder\Information\Thermo BAC55.pdf"
+Private Const stDronfieldSystem = "\\prg-dc.dhl.com\uk\dsc\sites\Boots\Boots_Contract\Chill\Dronfield\Dude's Folder\Maintenance\Dronfield-System.mdb"
 Private wsConfirmation As Worksheet
 Private arSheetNumber() As String
 
@@ -17,10 +18,12 @@ End Sub
 
 'Main sub for the entire export process
 Public Sub main()
+    Dim pickingCollection As New clsPickingFigures
+    
     Call initialiseValues               'Load values to be used
     Call clearPreviousData              'Clear the entries matching picking sheet number from the database.
-    Call collectNewData                 'Collect the new data from the sheet
-    Call addToDatabase                  'Enter the data to the database.
+    'Set pickingCollection = collectNewData                 'Collect the new data from the sheet
+    Call addToDatabase(collectNewData)                  'Enter the data to the database.
     Call cleanUp                        'Clear up the values
 End Sub
 
@@ -81,12 +84,11 @@ Private Sub clearDatabaseValues(anArray As Variant)
     
     If Not IsVarArrayEmpty(arSheetNumber) Then
         Dim tempString As String
-        Private Const stDronfieldSystem = "\\prg-dc.dhl.com\uk\dsc\sites\Boots\Boots_Contract\Chill\Dronfield\Dude's Folder\Maintenance\Dronfield-System.mdb"
         
         Call ADO_Conn.Open_Connection(stDronfieldSystem) 'Open the connection to a different database.
         For lPos = 0 To UBound(arSheetNumber)
             stSQL = "DELETE FROM [@Pickings] WHERE [sheetNumber] = '" & arSheetNumber(lPos) & "';"
-            ADO_Conn.conn.Execute stSQL
+            ADO_Conn.Conn.Execute stSQL
             Debug.Print "database execution string: " & stSQL
         Next lPos
         Call ADO_Conn.Close_Connection
@@ -112,21 +114,68 @@ Private Sub clearPreviousData()
             End If
         Next rCell
         Call clearDatabaseValues(arSheetNumber) 'Call the delete SQL to remove the value from the database that are in the array.
+        Set lookR = Nothing
     Else
         'Incorrect column found, return error and stop the program.
     End If
 End Sub
 
 'collect the data to be entered into the database
-Private Sub collectNewData()
+Private Function collectNewData() As clsPickingFigures
+    Dim lookR As Range, rCell As Range
+    Dim finalRow As Long, currentRow As Long
+    Dim pickingValues As clsPickingFigure
+    Dim pickCollection As New clsPickingFigures
+        
     'Set the range to read.
+    finalRow = wsConfirmation.Range("B10000").End(xlUp).Row
+    Set lookR = wsConfirmation.Range("B7:B" & finalRow)
+    For Each rCell In lookR
+        currentRow = rCell.Row
+        If Not wsConfirmation.Range("E" & currentRow).Value = "" Then
+            Set pickingValues = New clsPickingFigure
+            With pickingValues
+                .sheetNumber = rCell.Value
+                .pickDate = wsConfirmation.Range("A" & currentRow).Value
+                .operatorID = wsConfirmation.Range("U" & currentRow).Value
+                .casesQty = wsConfirmation.Range("C" & currentRow).Value
+                .singlesQty = wsConfirmation.Range("D" & currentRow).Value
+                .reasonCode = wsConfirmation.Range("F" & currentRow).Value
+                .productCode = wsConfirmation.Range("Q" & currentRow).Value
+            End With
+            pickCollection.Add pickingValues
+            Set pickingValues = Nothing
+        End If
+    Next rCell
+    
+    Set collectNewData = pickCollection
+    
+    Set lookR = Nothing
     'Add the value to the Picking Object Array.
-End Sub
+End Function
 
 'Add data to the database
-Private Sub addToDatabase()
-    'Create the string for each of the entries for the database.
-    'Execute the SQL code for the database entries.
+Private Sub addToDatabase(pickCollection As clsPickingFigures)
+    Dim stSQL As String
+    Dim pickEntry As clsPickingFigure
+        
+    'Open the database connection (custom connection required).
+    ADO_Conn.Open_Connection stDronfieldSystem
+    
+    For Each pickEntry In pickCollection.Items
+        'Create the string for each of the entries for the database.
+        stSQL = "INSERT INTO [@Pickings] ([sheetNumber], [pickDate], [employeeID], [productCode], [singlePicks], [casePicks]) " & _
+                "VALUES ('" & pickEntry.sheetNumber & "', #" & Format(pickEntry.pickDate, "mm/dd/yyyy") & "#, " & pickEntry.operatorID & ", '" & pickEntry.productCode & "', " & pickEntry.singlesQty & ", " & pickEntry.casesQty & ");"
+        Debug.Print "stSQL : " & stSQL
+        
+        'Execute the SQL code for the database entries.
+        ADO_Conn.Conn.Execute stSQL
+    Next pickEntry
+    
+    'close the connection to the database.
+    ADO_Conn.Close_Connection
+    
+    Set pickCollection = Nothing
 End Sub
 
 'Removes objects from memory
