@@ -4,7 +4,7 @@ Public Const versionSite = "Dronfield"
 
 Const SettingsSheetName = "Control Buttons"
 
-Public conn As ADODB.Connection
+Public Conn As ADODB.Connection
 Public boolConnectionOpen As Boolean
 Dim boolRecordsetOpen As Boolean
 Dim databaseLocation As String
@@ -45,7 +45,7 @@ End Sub
 
 'function to execute raw SQL commands
 Public Sub rawSQLExecute(stSQL)
-    conn.Execute stSQL
+    Conn.Execute stSQL
 End Sub
 
 'Function to return a record count from a raw SQL string
@@ -53,7 +53,7 @@ Public Function getRawRecordCount(stSQL) As Long
     Dim lRecordCount As Long
         rsTemporary As New ADODB.Recordset
         rsTemporary.CursorType = adOpenKeyset
-        rsTemporary.Open stSQL, conn
+        rsTemporary.Open stSQL, Conn
         lRecordCount = rsTemporary.RecordCount
         rsTemporary.Close
         getRawRecordCount = lRecordCount
@@ -83,17 +83,17 @@ End Function
 
 'Gather the information to connect to the appropriate database.
 Public Function Open_Connection(Optional customDatabaseLocation As String = vbNullString) As Long
-    Set conn = New ADODB.Connection
+    Set Conn = New ADODB.Connection
     
     If Not customDatabaseLocation = vbNullString Then databaseLocation = customDatabaseLocation 'Use the custom location if it is supplied
     If databaseLocation = "" Or IsNull(databaseLocation) Then Load_Settings 'Use the default if not supplied.
     
     databaseLocation = checkDatabaseLocation(databaseLocation) 'Check to see if the database exists.
     
-    conn.Provider = "Microsoft.Jet.OLEDB.4.0"    'Main Connection method used
-    conn.ConnectionString = "Data Source=" & databaseLocation 'DB Location to open
+    Conn.Provider = "Microsoft.Jet.OLEDB.4.0"    'Main Connection method used
+    Conn.ConnectionString = "Data Source=" & databaseLocation 'DB Location to open
     
-    conn.Open   'Open the Connection to the database.
+    Conn.Open   'Open the Connection to the database.
 
     Debug.Print Err.Number
     Open_Connection = Err.Number
@@ -115,7 +115,7 @@ Public Function UpdateProductList(singlesBarcode As String, productDescription A
             "FROM [Products] " & _
             "WHERE [Singles Barcode] = '" & singlesBarcode & "';"
             
-    rsProductList.Open stSQL, conn
+    rsProductList.Open stSQL, Conn
     boolRecordsetOpen = True
     rsCount = rsProductList.RecordCount
     
@@ -131,7 +131,7 @@ Public Function UpdateProductList(singlesBarcode As String, productDescription A
     
     rsProductList.Close
     boolRecordsetOpen = False
-    conn.Execute stSQL
+    Conn.Execute stSQL
     
     If boolRecordsetOpen = True Then
         rsProductList.Close
@@ -151,7 +151,7 @@ Public Function fetchPickRate(productSinglesCode As String) As Long
     
     stSQL = "SELECT [Singles Barcode], [Pick Rate] FROM [Products] WHERE [Singles Barcode] = '" & productSinglesCode & "';"
     
-    rs.Open stSQL, conn
+    rs.Open stSQL, Conn
     rsCount = rs.RecordCount
     
     If rsCount > 0 Then
@@ -176,7 +176,7 @@ Public Function FetchString(tableName As String, searchField As String, resultFi
     stSQL = "SELECT [" & searchField & "], [" & resultField & "] FROM [" & tableName & "] " & _
             "WHERE [" & searchField & "] = '" & searchString & "';"
 
-    rs.Open stSQL, conn
+    rs.Open stSQL, Conn
     rsCount = rs.RecordCount
         
     If rsCount > 0 Then
@@ -193,7 +193,7 @@ Public Function FetchString(tableName As String, searchField As String, resultFi
 End Function
 
 Public Function Close_Connection() As Long
-    conn.Close
+    Conn.Close
     boolConnectionOpen = False
-    Set conn = Nothing
+    Set Conn = Nothing
 End Function
