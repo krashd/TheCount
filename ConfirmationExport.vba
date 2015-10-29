@@ -16,22 +16,26 @@ Sub loadHelpFile()
     Documents.Open "U:\Boots_Contract\Chill\Dronfield\Dude's Folder\Information\Help Files\Shift Plan.pdf"
 End Sub
 
+Private Sub displayError(strError As String)
+    Debug.Print strError
+    End
+End Sub
+
 'Main sub for the entire export process
 Public Sub main()
-    Dim pickingCollection As New clsPickingFigures
-    
-    Call initialiseValues               'Load values to be used
-    Call clearPreviousData              'Clear the entries matching picking sheet number from the database.
-    'Set pickingCollection = collectNewData                 'Collect the new data from the sheet
-    Call addToDatabase(collectNewData)                  'Enter the data to the database.
-    Call cleanUp                        'Clear up the values
+    'Load values to be used
+    initialiseValues
+    clearPreviousData
+    addToDatabase collectNewData   'Enter the data to the database.
+    cleanUp                        'Clear up the values
 End Sub
 
 'Set up the main values to be used
-Private Sub initialiseValues()
+Private Function initialiseValues() As Long
     Set wsConfirmation = ThisWorkbook.Sheets("Pick Confirmation")
     Erase arSheetNumber
-End Sub
+    initialiseValues = 0
+End Function
 
 'Add to the preArray for database useage.
 Private Sub addToDatabaseArray(stEntry As String)
@@ -98,7 +102,7 @@ Private Sub clearDatabaseValues(anArray As Variant)
 End Sub
 
 'Clear entries from any exisiting date that matches the same date
-Private Sub clearPreviousData()
+Private Function clearPreviousData() As Long
     Dim lookR As Range, rCell As Range
     Dim finalRow As Long
     
@@ -107,18 +111,25 @@ Private Sub clearPreviousData()
     If lookR.Value = "Pick sheet number" Then
         'Correct Column found
         finalRow = wsConfirmation.Range("B10000").End(xlUp).Row
-        Set lookR = wsConfirmation.Range("B7:B" & finalRow)
-        For Each rCell In lookR
-            If rCell.Value <> "" Then
-                Call addToDatabaseArray(rCell.Value) 'Add the value to the array for database processing.
-            End If
-        Next rCell
-        Call clearDatabaseValues(arSheetNumber) 'Call the delete SQL to remove the value from the database that are in the array.
-        Set lookR = Nothing
+        If finalRow > 6 Then
+            Set lookR = wsConfirmation.Range("B7:B" & finalRow)
+            For Each rCell In lookR
+                If rCell.Value <> "" Then
+                    Call addToDatabaseArray(rCell.Value) 'Add the value to the array for database processing.
+                End If
+            Next rCell
+            Call clearDatabaseValues(arSheetNumber) 'Call the delete SQL to remove the value from the database that are in the array.
+            Set lookR = Nothing
+            clearPreviousData = 0
+        Else
+            Debug.Print "No values entered into the picking confirmation sheet."
+            End
+            clearPreviousData = -1
+        End If
     Else
         'Incorrect column found, return error and stop the program.
     End If
-End Sub
+End Function
 
 'collect the data to be entered into the database
 Private Function collectNewData() As clsPickingFigures
