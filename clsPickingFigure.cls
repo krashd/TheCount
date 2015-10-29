@@ -1,9 +1,12 @@
+Option Explicit
+
 Private pPickDate As Date
 Private pSheetNumber As String
 Private pOperatorID As Long
 Private pReasonCode As String
 Private pSinglesQty As Long
 Private pCasesQty As Long
+Private pProductCode As String
 
 Public Property Get pickDate() As Date
     pickDate = pPickDate
@@ -51,4 +54,12 @@ End Property
 
 Public Property Let casesQty(Value As Long)
     pCasesQty = Value
+End Property
+
+Public Property Get productCode() As String
+    productCode = pProductCode
+End Property
+
+Public Property Let productCode(Value As String)
+    pProductCode = Value
 End Property
